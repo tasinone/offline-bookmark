@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Bookmark Manager</title>
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .button-container {
+            margin-bottom: 20px;
+        }
+
+        .button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-button {
+            background-color: #27b783;
+            color: #fff;
+        }
+
+        .add-button:hover {
+            background-color: #1e9f6d;
+        }
+
+        .mode-button {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .mode-button:hover {
+            background-color: #222;
+        }
+
+        #bookmarks-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 800px;
+        }
+
+        .bookmark {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            margin: 10px;
+            padding: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bookmark:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .bookmark h3 {
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .bookmark h3:hover {
+            text-decoration: underline;
+        }
+
+        .edit-form {
+            display: none;
+            margin-top: 5px;
+        }
+
+        .edit-button,
+        .delete-button {
+            margin-top: auto;
+        }
+
+        .edit-button {
+            background-color: #27b783;
+            color: #fff;
+            border: none;
+            margin-bottom: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .edit-button:hover {
+            background-color: #1e9f6d;
+        }
+
+        .delete-button {
+            background-color: #c61313;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-button:hover {
+            background-color: #a21010;
+        }
+
+        .popup {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            z-index: 999;
+        }
+
+        .popup-message {
+            margin: 0;
+        }
+
+        /* Dark mode styles */
+        .dark-mode {
+            background-color: #1a1a2b;
+            color: #fff;
+        }
+
+        .dark-mode h1,
+        .dark-mode .button,
+        .dark-mode .bookmark {
+            color: #fff;
+        }
+
+        .dark-mode .add-button,
+        .dark-mode .mode-button {
+            background-color: #27b783;
+        }
+
+        .dark-mode .add-button:hover,
+        .dark-mode .mode-button:hover {
+            background-color: #1e9f6d;
+        }
+
+        .dark-mode .bookmark {
+            background-color: #332946;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .dark-mode .bookmark:hover {
+            box-shadow: 0 5px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .dark-mode .bookmark h3 {
+            color: #fff;
+        }
+
+        .dark-mode .edit-button {
+            background-color: #27b783;
+        }
+
+        .dark-mode .edit-button:hover {
+            background-color: #1e9f6d;
+        }
+
+        .dark-mode .delete-button {
+            background-color: #c61313;
+        }
+
+        .dark-mode .delete-button:hover {
+            background-color: #a21010;
+        }
+
+        /* New styles for the image upload button */
+        .upload-dialog {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            z-index: 999;
+        }
+
+        .upload-dialog button {
+            margin-bottom: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .upload-dialog button.select-button {
+            background-color: #27b783;
+            color: #fff;
+            border: none;
+        }
+
+        .upload-dialog button.select-button:hover {
+            background-color: #1e9f6d;
+        }
+
+        .upload-dialog button.remove-button {
+            background-color: #c61313;
+            color: #fff;
+            border: none;
+        }
+
+        .upload-dialog button.remove-button:hover {
+            background-color: #a21010;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Bookmark Manager</h1>
+
+    <div class="button-container">
+        <button class="button add-button" onclick="addBookmark()">Add Bookmark</button>
+        <button id="mode-button" class="button mode-button" onclick="toggleMode()">Night Mode</button>
+    </div>
+
+    <div id="bookmarks-container"></div>
+
+    <div id="popup" class="popup">
+        <p class="popup-message"></p>
+    </div>
+
+    <div class="upload-dialog">
+        <button class="select-button" onclick="showImageUploadDialog()">Select an Image</button>
+        <button class="remove-button" onclick="removeImage()">Remove Image</button>
+    </div>
+
+    <input type="file" id="image-input" style="display: none;">
+
+    <script>
+        var bookmarks = [];
+
+        function addBookmark() {
+            var name = prompt("Enter the site name:");
+            if (name === null || name.trim() === "") return;
+
+            var url = prompt("Enter the URL:");
+            if (url === null || url.trim() === "") return;
+
+            if (bookmarks.some(function(bookmark) { return bookmark.url === url; })) {
+                alert("This bookmark already exists.");
+                return;
+            }
+
+            var bookmark = { name: name, url: url };
+            bookmarks.push(bookmark);
+
+            renderBookmarks();
+        }
+
+        function deleteBookmark(index) {
+            bookmarks.splice(index, 1);
+            renderBookmarks();
+        }
+
+        function editBookmark(index) {
+            var newTitle = prompt("Enter the new site name:", bookmarks[index].name);
+            if (newTitle === null || newTitle.trim() === "") return;
+
+            var newUrl = prompt("Enter the new URL:", bookmarks[index].url);
+            if (newUrl === null || newUrl.trim() === "") return;
+
+            if (bookmarks.some(function(bookmark, i) { return i !== index && bookmark.url === newUrl; })) {
+                alert("This bookmark already exists.");
+                return;
+            }
+
+            bookmarks[index].name = newTitle;
+            bookmarks[index].url = newUrl;
+
+            renderBookmarks();
+        }
+
+        function renderBookmarks() {
+            var container = document.getElementById("bookmarks-container");
+            container.innerHTML = "";
+
+            for (var i = 0; i < bookmarks.length; i++) {
+                var bookmark = bookmarks[i];
+
+                var bookmarkElement = document.createElement("div");
+                bookmarkElement.className = "bookmark";
+                bookmarkElement.style.backgroundImage = "url('favicon.png')";
+                bookmarkElement.addEventListener("click", function(url) {
+                    return function() {
+                        window.open(url, "_blank");
+                    };
+                }(bookmark.url));
+
+                var nameElement = document.createElement("h3");
+                nameElement.textContent = bookmark.name;
+
+                var editButton = document.createElement("button");
+                editButton.className = "edit-button";
+                editButton.textContent = "Edit";
+                editButton.addEventListener("click", function(index) {
+                    return function() {
+                        editBookmark(index);
+                    };
+                }(i));
+
+                var deleteButton = document.createElement("button");
+                deleteButton.className = "delete-button";
+                deleteButton.textContent = "Delete";
+                deleteButton.addEventListener("click", function(index) {
+                    return function() {
+                        deleteBookmark(index);
+                    };
+                }(i));
+
+                bookmarkElement.appendChild(nameElement);
+                bookmarkElement.appendChild(editButton);
+                bookmarkElement.appendChild(deleteButton);
+
+                container.appendChild(bookmarkElement);
+            }
+        }
+
+        function toggleMode() {
+            var body = document.body;
+            var modeButton = document.getElementById("mode-button");
+
+            body.classList.toggle("dark-mode");
+
+            if (body.classList.contains("dark-mode")) {
+                modeButton.textContent = "Day Mode";
+            } else {
+                modeButton.textContent = "Night Mode";
+            }
+        }
+
+        function showImageUploadDialog() {
+            var imageInput = document.getElementById("image-input");
+            imageInput.click();
+
+            imageInput.addEventListener("change", function() {
+                var file = imageInput.files[0];
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    document.body.style.backgroundImage = "url('" + e.target.result + "')";
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeImage() {
+            document.body.style.backgroundImage = "none";
+        }
+
+        renderBookmarks();
+    </script>
+</body>
+</html>
